@@ -1,0 +1,43 @@
+
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Company Brain</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui, Arial; margin: 2rem; }
+      .card { border: 1px solid #ddd; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+      .row { display: flex; gap: 1rem; }
+      .row > * { flex: 1; }
+      .msg { white-space: pre-wrap; }
+      .cit { font-size: 12px; color: #555; }
+      button { padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid #999; background: #f6f6f6; cursor: pointer; }
+      input[type=file] { border: 1px dashed #bbb; padding: 1rem; border-radius: 10px; width: 100%; }
+      .answer { background: #fafafa; padding: 1rem; border-radius: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Company Brain</h1>
+    <div class="card">
+      <h3>Upload Documents</h3>
+      <input id="file" type="file" multiple />
+      <div style="margin-top: 0.5rem;">
+        <button onclick="upload()">Upload</button>
+      </div>
+      <div id="upres" class="cit"></div>
+    </div>
+
+    <div class="card">
+      <h3>Ask</h3>
+      <div class="row">
+        <input id="q" placeholder="Ask a question about your docs..." />
+        <button onclick="ask()">Ask</button>
+      </div>
+      <div id="ans" class="answer"></div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

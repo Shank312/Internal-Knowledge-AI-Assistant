@@ -1,0 +1,81 @@
+
+
+version: "3.9"
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: brain
+      POSTGRES_PASSWORD: brainpass
+      POSTGRES_DB: company_brain
+    ports: ["5432:5432"]
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./migrations/rls.sql:/docker-entrypoint-initdb.d/02-rls.sql
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2024-07-13T01-46-15Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports: ["9000:9000","9001:9001"]
+    volumes: [ "minio_data:/data" ]
+
+  api:
+    build: ./api
+    environment:
+      APP_ENV: dev
+      REDACTED: ${REDACTED}
+      POSTGRES_USER: brain
+      POSTGRES_PASSWORD: brainpass
+      POSTGRES_DB: company_brain
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+      MINIO_BUCKET: company-brain
+      MINIO_ENDPOINT_URL: http://minio:9000
+      MINIO_REGION: us-east-1
+      DEFAULT_TENANT_ID: tenant_demo
+      EMBEDDING_MODEL: text-embedding-3-small
+      LLM_MODEL: gpt-4o-mini
+      TOP_K: 6
+      MAX_TOKENS: 500
+      TEMPERATURE: 0.2
+    depends_on: [db, redis, minio]
+    ports: ["8000:8000"]
+
+  worker:
+    build: ./worker
+    environment:
+      REDACTED: ${REDACTED}
+      POSTGRES_USER: brain
+      POSTGRES_PASSWORD: brainpass
+      POSTGRES_DB: company_brain
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+      MINIO_BUCKET: company-brain
+      MINIO_ENDPOINT_URL: http://minio:9000
+      MINIO_REGION: us-east-1
+      DEFAULT_TENANT_ID: tenant_demo
+      EMBEDDING_MODEL: text-embedding-3-small
+    depends_on: [db, redis, minio]
+
+  web:
+    build: ./web
+    depends_on: [api]
+    ports: ["5173:5173"]
+
+volumes:
+  db_data:
+  minio_data:
